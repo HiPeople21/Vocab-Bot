@@ -1,0 +1,111 @@
+import os
+import discord
+from PyDictionary import PyDictionary
+from keep_running import app
+from multiprocessing import Process
+
+dictionary = PyDictionary()
+
+client = discord.Client()
+
+seperator = '\n ~'
+
+@client.event
+async def on_ready():
+  print(f'We have logged in as {client.user}')
+
+
+@client.event
+async def on_message(message):
+
+
+  if message.author == client.user:
+    return
+
+  if message.content.startswith('-meaning'):
+    if len(message.content.split(" ")) > 2:
+      await message.channel.send('Please only use one word.')
+      
+    elif len(message.content.split(" ")) == 2:
+      word = message.content.split(" ")[1]
+      try:
+        category = list(dictionary.meaning(word))[0]
+
+        try:
+          await message.channel.send(f"Word: {word}\nCategory: {category}\nMeaning(s):\n ~{seperator.join(dictionary.meaning(word)[category])}")
+        
+        except discord.errors.HTTPException:
+          await message.channel.send('Meaning not found or word does  not exist.')
+      
+      except TypeError:
+        await message.channel.send('Meaning not found or word does not exist.')
+        
+
+    else:
+      await message.channel.send('Please type in a word.')
+
+  
+  elif message.content.startswith('-synonym'):
+    if len(message.content.split(" ")) > 2:
+      await message.channel.send('Please only use one word.')
+      
+    elif len(message.content.split(" ")) == 2:
+      word = message.content.split(" ")[1]
+      try:
+        try:
+          await message.channel.send(f"Word: {word}\nSynonym(s):\n ~{seperator.join(dictionary.synonym(word))}")
+        
+        except discord.errors.HTTPException:
+          await message.channel.send('Synonym(s) not found or word does  not exist.')
+      
+      except TypeError:
+        await message.channel.send('Synonym(s) not found or word does not exist.')
+        
+
+    else:
+      await message.channel.send('Please type in a word.')
+
+  elif message.content.startswith('-antonym'):
+      if len(message.content.split(" ")) > 2:
+        await message.channel.send('Please only use one word.')
+        
+      elif len(message.content.split(" ")) == 2:
+        word = message.content.split(" ")[1]
+        try:
+          try:
+            await message.channel.send(f"Word: {word}\nAntonym(s):\n ~{seperator.join(dictionary.antonym(word))}")
+          
+          except discord.errors.HTTPException:
+            await message.channel.send('Antonym(s) not found or word does  not exist.')
+        
+        except TypeError:
+          await message.channel.send('Antonym(s) not found or word does not exist.')
+          
+
+      else:
+        await message.channel.send('Please type in a word.')
+
+  elif message.content.startswith('-translate'):
+    if len(message.content.split(" ")) > 3:
+      await message.channel.send('Please only use two words: -the word -the language.')
+        
+    elif len(message.content.split(" ")) == 3:
+      word = message.content.split(" ")[1]
+      language = message.content.split(" ")[2]
+      try:
+        try:
+          await message.channel.send(f"Word: {word}\nLanguage: {language}\nTranslation: {dictionary.translate(word,language)}")
+          
+        except discord.errors.HTTPException:
+          await message.channel.send('Translation not found or word does not exist.')
+        
+      except TypeError:
+        await message.channel.send('Translation not found or word does not exist.')
+          
+
+    else:
+      await message.channel.send('Please type in a word/language.')
+
+
+Process(target=client.run(os.environ['TOKEN'])).start()
+Process(target=app.run(host = '0.0.0.0', port = '8080')).start()
